@@ -22,7 +22,7 @@ create table PARTICIPANT
    ADRPERS              CHAR(50),
    CPPERS               CHAR(5),
    VILLEPERS            CHAR(50),
-   TELPERS              CHAR(10),
+   TELPERS              CHAR(14),
    TPPERS               CHAR(1)             
       constraint CKC_TPPERS_PARTICIP check (TPPERS is null or (TPPERS in ('P','C','E'))),
    constraint PK_PARTICIPANT primary key (CDPERS)
@@ -51,7 +51,7 @@ create table SITE
    CPSITE               CHAR(5),
    VILLESITE            CHAR(50),
    EMAILSITE            CHAR(50),
-   TELSITE              CHAR(10),
+   TELSITE              CHAR(14),
    SITEWEB              CHAR(50),
    constraint PK_SITE primary key (CDSITE)
 );
@@ -128,3 +128,64 @@ CREATE INDEX ck_NOMSITE ON SITE (NOMSITE);
 CREATE INDEX ck_NOMPERS ON PARTICIPANT (NOMPERS);
 CREATE INDEX ck_PRENOMPERS ON PARTICIPANT (PRENOMPERS);
 CREATE INDEX ck_NOMACT  ON ACTIVITE (NOMACT);
+
+-- Insertion des valeurs de la table THEME
+
+INSERT INTO THEME VALUES (1,'Animaux');
+INSERT INTO THEME VALUES (2,'Sport');
+INSERT INTO THEME VALUES (3,'Bateaux');
+INSERT INTO THEME VALUES (4,'Ferme pédagogique');
+INSERT INTO THEME VALUES (5,'Parcs et jardins');
+INSERT INTO THEME VALUES (6,'Jeux pour enfants');
+INSERT INTO THEME VALUES (7,'Patrimoine');
+INSERT INTO THEME VALUES (8,'Parcours Sportifs');
+INSERT INTO THEME VALUES (9,'Golf');
+INSERT INTO THEME VALUES (10,'Sports nautiques');
+INSERT INTO THEME VALUES (11,'Parc d"attractions');
+
+-- Insertion des valeurs de la table TERRITOIRE
+
+INSERT INTO TERRITOIRE VALUES (1,'Autour du Louvres - Lens');
+INSERT INTO TERRITOIRE VALUES (2,'Vallées et Marais');
+INSERT INTO TERRITOIRE VALUES (3,'Côte d"opale');
+
+-- Insertion des valeurs de la table PARTICIPANT
+
+CREATE SEQUENCE cdPersSq start with 1;
+
+INSERT INTO PARTICIPANT
+SELECT cdPersSq.NEXTVAL, nomPers, prenomPers, adrPers, cpPers, villePers,telPers,tpPers,dateNais
+FROM TESTS1.EMPRUNTEUR;
+
+INSERT INTO PARTICIPANT
+SELECT cdPersSq.NEXTVAL, nom, prnm, adr, cp, localite,NULL,'P',datNs
+FROM TESTS1.CLIENT;
+
+-- Insertion des valeurs de la table SITE
+
+INSERT INTO SITE
+SELECT cdSite, si.cdTerr, si.cdTheme, nomSite, tpSite, adrSite, cpSite, villeSite, emailSite, telSite, siteweb
+FROM TESTSAELD.SITE si, TERRITOIRE te, THEME th
+WHERE si.cdTerr = te.cdTerr AND si.cdTheme = th.cdTheme;
+
+-- Insertion des valeurs de la table EVENEMENT
+
+ALTER TABLE EVENEMENT ADD nomEV CHAR(50);
+
+INSERT INTO EVENEMENT (cdSite, numEv, nomEv, dateDebEv, dateFinEv, NbPlaces, Tarif)
+SELECT e.cdSite, numEv, nomEv, dateDebEv, dateFinEv, NbPlaces, Tarif
+FROM TESTSAELD.EVENEMENT e, SITE s
+WHERE e.cdSite = s.cdSite;
+
+
+-- Insertion des valeurs de la table RESERVATION 
+
+INSERT INTO RESERVATION
+SELECT DISTINCT i.cdPers, i.cdSite, i.numEv, i.DateInscr AS "DateResa", i.NbPlResa, i.ModeReglt
+FROM TESTSAELD.INSCRIPTION i, PARTICIPANT p, SITE s, EVENEMENT e
+WHERE i.cdPers = p.cdPers AND i.cdSite = s.cdSite AND i.numEv = e.numEv ;
+
+
+
+
+
